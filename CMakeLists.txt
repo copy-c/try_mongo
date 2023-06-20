@@ -8,5 +8,5 @@ set(CMAKE_CXX_STANDARD 17)
 include_directories(/usr/local/include/ /usr/local/include/mongocxx/v_noabi /usr/local/include/bsoncxx/v_noabi)
 link_directories(/usr/local/lib/)
 
-add_executable(try_mongo main.cpp)
+add_executable(try_mongo main.cpp storage/mongo.cpp storage/mongo.h)
 target_link_libraries(try_mongo libmongocxx.dylib libbsoncxx.dylib)
