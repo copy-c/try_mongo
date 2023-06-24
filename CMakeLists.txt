@@ -1,12 +1,16 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.28.1)
 project(try_mongo)
 
 set(CMAKE_CXX_STANDARD 17)
 
-#find_package(libmongocxx REQUIRED)
+find_package(nlohmann_json 3.11.2 REQUIRED)
+find_package(mongocxx 3.10.1 REQUIRED)
+find_package(absl REQUIRED)
+find_package(fmt REQUIRED)
 
-include_directories(/usr/local/include/ /usr/local/include/mongocxx/v_noabi /usr/local/include/bsoncxx/v_noabi)
-link_directories(/usr/local/lib/)
-
-add_executable(try_mongo main.cpp storage/mongo.cpp storage/mongo.h)
-target_link_libraries(try_mongo libmongocxx.dylib libbsoncxx.dylib)
+add_executable(try_mongo main.cpp mongo.cpp mongo.h
+        exception_backoff.h)
+target_link_libraries(try_mongo PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(try_mongo PRIVATE mongo::mongocxx_shared)
+target_link_libraries(try_mongo PRIVATE absl::strings absl::status)
+target_link_libraries(try_mongo PRIVATE fmt::fmt)

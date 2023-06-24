@@ -1,7 +1,11 @@
 #include <chrono>
 #include <vector>
 
+#include "absl/strings/str_join.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "nlohmann/json.hpp"
+#include "fmt/format.h"
 
 #include <bsoncxx/json.hpp>
 #include <bsoncxx/builder/basic/array.hpp>
@@ -19,6 +23,12 @@ using bsoncxx::builder::basic::make_array;
 using bsoncxx::builder::basic::make_document;
 
 int main(int, char**) {
+    std::vector<std::string> v = {"foo","bar","baz"};
+    std::string s = absl::StrJoin(v, "-");
+    std::cout << fmt::format("{}=", s);
+
+    json test = 1;
+
     try {
         // The mongocxx::instance constructor and destructor initialize and shut down the driver,
         // respectively. Therefore, a mongocxx::instance must be created before using the driver and
@@ -39,6 +49,7 @@ int main(int, char**) {
         auto doc_event = bsoncxx::from_json(event.dump());
         auto res = sch_db.insert_one(std::move(doc_event));
         auto id  = res->inserted_id();
+        // bsoncxx::to_json(res->inserted_id());
         // std::cout << id.get() << std::endl;
 
         // minsert
