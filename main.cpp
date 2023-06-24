@@ -39,6 +39,7 @@ int main(int, char**) {
         auto doc_event = bsoncxx::from_json(event.dump());
         auto res = sch_db.insert_one(std::move(doc_event));
         auto id  = res->inserted_id();
+        // bsoncxx::to_json(res->inserted_id());
         // std::cout << id.get() << std::endl;
 
         // minsert
