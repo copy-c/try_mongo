@@ -1,4 +1,5 @@
 #include <chrono>
+#include <vector>
 
 #include "nlohmann/json.hpp"
 
@@ -23,20 +24,43 @@ int main(int, char**) {
         // respectively. Therefore, a mongocxx::instance must be created before using the driver and
         // must remain alive for as long as the driver is in use.
         const auto uri = mongocxx::uri{
-                "mongodb+srv://user:name@cluster0.s5iqjku.mongodb.net/?retryWrites=true&w=majority"};
-        // Set the version of the Stable API on the client.
+                "mongodb+srv://copy:muqurenxuexi@cluster0.s5iqjku.mongodb.net/?retryWrites=true&w=majority"};
+            // Set the version of the Stable API on the client.
         mongocxx::options::client client_options;
         const auto api = mongocxx::options::server_api{mongocxx::options::server_api::version::k_version_1};
         client_options.server_api_opts(api);
         // Setup the connection and get a handle on the "admin" database.
-        mongocxx::client conn{uri, client_options};
-        mongocxx::database db = conn["admin"];
+        mongocxx::client client{uri, client_options};
+        mongocxx::database db = client["scheduler"];  // If the database you request does not exist, MongoDB creates it when you first store data.
+        auto sch_db = db["appointments"];  // If the database you request does not exist, MongoDB creates it when you first store data.
 
-        // Ping the database.
-        const auto ping_cmd = bsoncxx::builder::basic::make_document(bsoncxx::builder::basic::kvp("ping", 1));
-        db.run_command(ping_cmd.view());
+        // insert
+        json event = R"({"start": "1"})"_json;
+        auto doc_event = bsoncxx::from_json(event.dump());
+        auto res = sch_db.insert_one(std::move(doc_event));
+        auto id  = res->inserted_id();
+        // std::cout << id.get() << std::endl;
+
+        // minsert
+        json event1 = R"({"start": "2"})"_json;
+        auto doc_event1 = bsoncxx::from_json(event1.dump());
+        json event2 = R"({"start": "3"})"_json;
+        auto doc_event2 = bsoncxx::from_json(event2.dump());
+        auto res_m = sch_db.insert_many(std::vector<bsoncxx::document::value>{doc_event1, doc_event2});
+        auto res_m_view = res_m->result();
+        auto res_m_ids = res_m->inserted_ids();
+
+        // get
+        auto find_one = sch_db.find_one(make_document(kvp("_id", id)));
+        std::cout << bsoncxx::to_json(find_one->view()) << std::endl;
+
+        // list
+        auto cursor_all = sch_db.find({});
+        for (auto doc : cursor_all) {
+            std::cout << bsoncxx::to_json(doc, bsoncxx::ExtendedJsonMode::k_relaxed) << std::endl;
+        }
+
         std::cout << "Pinged your deployment. You successfully connected to MongoDB!" << std::endl;
-//    auto db = client["test"];
     } catch (const std::exception& e)
     {
         // Handle errors
@@ -46,8 +70,6 @@ int main(int, char**) {
 
     // TODO: fix dates
 
-    json test_value = R"({"key": "value"})"_json;
-    auto doc_value = bsoncxx::from_json(test_value.dump());
 
     int i = 0;
     // We choose to move in our document here, which transfers ownership to insert_one()
