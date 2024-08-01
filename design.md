@@ -37,3 +37,6 @@ eg: chao.zhao@zoom.us +
 unique index: id  
 index: slug  
 Compound Index: attendees.id + start_ts + end_ts + status
+
+1. last opened
+2. frequency
